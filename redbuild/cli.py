@@ -108,6 +108,12 @@ def build(
         "-R",
         help="Additional arguments to pass to container engine",
     ),
+    build_args=typer.Option(
+        "",
+        "--build-args",
+        "-B",
+        help="Additional arguments to pass to build script",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -147,8 +153,9 @@ def build(
         "/bin/bash",
         "-l",
         "-c",
-        f"cd /prj && {relative_buildscript}",
+        f"cd /prj && {relative_buildscript} {build_args}",
     )
+
 
 
 @app.callback()
