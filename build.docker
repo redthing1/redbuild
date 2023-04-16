@@ -1,0 +1,18 @@
+FROM debian:bullseye-slim
+
+# install dependencies
+RUN apt update && apt install -y \
+  # common build dependencies
+  bash git curl ccache \
+  # c++ build dependencies
+  build-essential \
+  # python build dependencies
+  python3 python3-pip patchelf \
+  && apt clean && rm -rf /var/lib/apt/lists/*
+
+# install poetry for python
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+  && echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+
+# set up main to run bash
+CMD ["/bin/bash", "-l"]
