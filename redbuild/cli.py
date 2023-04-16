@@ -157,6 +157,56 @@ def build(
     )
 
 
+@app.command()
+def shell(
+    dockerfile: str = typer.Option(
+        "build.docker",
+        "--dockerfile",
+        "-f",
+        help="Dockerfile to use for defining the build environment",
+    ),
+    cwd: str = typer.Option(
+        ".", "--cwd", "-C", help="Directory to use as the build context"
+    ),
+    crun_args=typer.Option(
+        "",
+        "--crun-args",
+        "-R",
+        help="Additional arguments to pass to container engine",
+    ),
+):
+    # 0. get container engine
+    ctr_engine = get_container_engine_command(detect_container_engine())
+
+    # 1. get name for builder image
+    builder_image_name = get_builder_image_name(cwd)
+
+    # 2. build builder image
+    image(dockerfile=dockerfile, cwd=cwd)
+
+    # 3. run an interactive shell with the build environment
+    print(f"Running interactive shell in [{builder_image_name}] in context [{cwd}]:")
+    run_cmd_args = [
+        "run",
+        # podman run args
+        "--rm",
+        "-it",
+        "-v",
+        f"{cwd}:/prj",
+        *[arg for arg in crun_args.split(" ") if arg],
+    ]
+    run_cmd = ctr_engine.bake(
+        *run_cmd_args,
+    )
+
+    logger.debug(f"Running command: {run_cmd}")
+    run_proc = run_cmd(
+        builder_image_name,
+        "/bin/bash",
+        "-l",
+        _fg=True,
+    )
+
 
 @app.callback()
 def app_callback(
