@@ -1,0 +1,5 @@
+name "hello_world"
+description "A minimal D application."
+authors "test"
+copyright "Copyright © 2022, test"
+license "proprietary"
