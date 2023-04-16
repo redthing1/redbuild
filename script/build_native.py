@@ -16,6 +16,7 @@ def cli():
         "--onefile",
         "--python-flag=-m",
         f"{PACKAGE_NAME}",
+        # f"--output-filename={PACKAGE_NAME}",
         _fg=True,
     )
     print(nuitka_cmd)
