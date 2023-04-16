@@ -84,6 +84,7 @@ def image(
         _err=lambda line: print(f"  {line}", end=""),
     )
 
+    logger.debug(f"Running command: {build_cmd}")
     build_proc = build_cmd()
 
 
@@ -101,6 +102,12 @@ def build(
     cwd: str = typer.Option(
         ".", "--cwd", "-C", help="Directory to use as the build context"
     ),
+    crun_args=typer.Option(
+        "",
+        "--crun-args",
+        "-R",
+        help="Additional arguments to pass to container engine",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -116,13 +123,17 @@ def build(
     print(
         f"Running build in [{builder_image_name}] with buildscript [{buildscript}] in context [{cwd}]:"
     )
-    run_cmd = ctr_engine.bake(
+    run_cmd_args = [
         "run",
         # podman run args
         "--rm",
         # "-it",
         "-v",
         f"{cwd}:/prj",
+        *[arg for arg in crun_args.split(" ") if arg],
+    ]
+    run_cmd = ctr_engine.bake(
+        *run_cmd_args,
         # _fg=True,
         # output formatting
         _out=lambda line: print(f"  {line}", end=""),
@@ -130,6 +141,7 @@ def build(
     )
 
     relative_buildscript = f"./{buildscript}"
+    logger.debug(f"Running command: {run_cmd}")
     run_proc = run_cmd(
         builder_image_name,
         "/bin/bash",
