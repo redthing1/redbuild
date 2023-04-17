@@ -7,13 +7,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-typer = "^0.7.0"
+typer = {extras = ["rich"], version = "^0.7.0"}
 sh = "^2.0.3"
 toml = "^0.10.2"
 ordered-set = "^4.1.0"
 loguru = "^0.7.0"
 psutil = "^5.9.4"
 single-source = "^0.3.0"
+rich = "^13.3.4"
 
 [tool.poetry.group.dev.dependencies]
 nuitka = "^1.5.5"
