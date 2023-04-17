@@ -268,6 +268,12 @@ def init(
     force: bool = typer.Option(
         False, "--force", "-f", help="Force initialization even if Dockerfile exists"
     ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Suppress output and use default buildenv"
+    ),
+    wizard: bool = typer.Option(
+        False, "--wizard", "-w", help="Run interactive buildenv configuration wizard"
+    ),
 ):
     # first, ensure that no build environment already exists
     dockerfile_path = os.path.join(cwd, dockerfile)
@@ -278,14 +284,56 @@ def init(
         )
         raise typer.Exit(1)
 
-    # write out a default Dockerfile
+    # create the dockerfile
     with open(dockerfile_path, "w") as f:
-        f.write(compose_dockerfile(DEFAULT_BUILDENV))
+        buildenv = DEFAULT_BUILDENV
+        if wizard:
+            # buildenv configuration wizard
+            print("Interactive buildenv configuration:")
 
-    print(f"Initialized build environment dockerfile: Created [{dockerfile_path}]:")
-    with open(dockerfile_path, "r") as f:
-        for line in f:
-            print(f"  {line}", end="")
+            # 1. base image selection
+            custom_base_image = typer.prompt(
+                "  Base image",
+                default=buildenv.base_image,
+            )
+
+            # 2. package selection
+            custom_packages = (
+                typer.prompt(
+                    "  Packages",
+                    default=" ".join(buildenv.additional_packages),
+                )
+                .strip()
+                .replace(",", " ")
+                .split(" ")
+            )
+
+            # 3. additional steps (multi-line), terminated by empty line
+            custom_steps = []
+            print("  Additional steps (terminate with empty line):")
+            while True:
+                step = typer.prompt("    ", default="")
+                if step.strip() == "":
+                    break
+                custom_steps.append(step)
+
+            # apply the custom values
+            buildenv.base_image = custom_base_image
+            buildenv.additional_packages = custom_packages
+            buildenv.additional_setup = custom_steps
+        else:
+            # use default buildenv
+            pass
+
+        # write the buildenv contents to the dockerfile
+        f.write(compose_dockerfile(buildenv))
+
+    if not quiet:
+        print(f"Initialized build environment dockerfile: Created [{dockerfile_path}]:")
+        # print out the dockerfile
+        with open(dockerfile_path, "r") as f:
+            for line in f:
+                print(f"  {line}", end="")
 
 
 def version_callback(value: bool):
