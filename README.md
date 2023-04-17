@@ -12,6 +12,9 @@ redbuild is a super simple drop-in script enabling software to be built in pre-d
 ## install stable version from pypi
 
 ```sh
+# with pipx (recommended)
+pipx install redbuild
+# with vanilla pip
 pip install redbuild
 ```
 
