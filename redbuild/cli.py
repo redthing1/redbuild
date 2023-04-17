@@ -21,6 +21,7 @@ from .engine import (
     get_container_engine_command,
 )
 from .util import get_builder_image_name, parse_secondary_args
+from .res import DEFAULT_BUILDENV_DOCKERFILE
 
 APP_NAME = "redbuild"
 app = typer.Typer(
@@ -59,8 +60,7 @@ def info():
     print(f"  Version: {ctr_engine('--version')}", end="")
 
 
-# build the build environment image
-@app.command()
+@app.command(help="Build a container image for the build environment")
 def image(
     dockerfile: str = typer.Option(
         DEFAULT_DOCKERFILE,
@@ -84,7 +84,7 @@ def image(
     # ensure dockerfile exists
     if not os.path.isfile(dockerfile):
         raise Exception(
-            f"Dockerfile {dockerfile} not found. Create it or pass a specific path with -f."
+            f"Dockerfile [{dockerfile}] not found. Create it or pass a specific path with -f."
         )
 
     # $CONTAINER_ENGINE build -t $BUILDER_TAG $CBUILD_ARGS -f $DOCKERFILE | sed 's/^/  /'
@@ -105,7 +105,7 @@ def image(
     build_proc = build_cmd()
 
 
-@app.command()
+@app.command(help="Run a build script in the build environment")
 def build(
     dockerfile: str = typer.Option(
         DEFAULT_DOCKERFILE,
@@ -174,7 +174,7 @@ def build(
     )
 
 
-@app.command()
+@app.command(help="Run a shell in the build environment")
 def shell(
     dockerfile: str = typer.Option(
         DEFAULT_DOCKERFILE,
@@ -230,6 +230,37 @@ def shell(
         *parse_secondary_args(shell_args),
         _fg=True,
     )
+
+
+@app.command(help="Initialize a build environment")
+def init(
+    dockerfile: str = typer.Option(
+        DEFAULT_DOCKERFILE,
+        "--dockerfile",
+        "-f",
+        help="Dockerfile to use for defining the build environment",
+    ),
+    cwd: str = typer.Option(
+        ".", "--cwd", "-C", help="Directory to use as the build context"
+    ),
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Force initialization even if Dockerfile exists"
+    ),
+):
+    # first, ensure that no build environment already exists
+    dockerfile_path = os.path.join(cwd, dockerfile)
+    if os.path.exists(dockerfile_path) and not force:
+        # logger.error(f"{dockerfile} already exists in {cwd}")
+        print(
+            f"Failed to initialize build environment dockerfile: [{dockerfile}] already exists in [{cwd}]."
+        )
+        raise typer.Exit(1)
+
+    # write out a default Dockerfile
+    with open(dockerfile_path, "w") as f:
+        f.write(DEFAULT_BUILDENV_DOCKERFILE)
+
+    print(f"Initialized build environment dockerfile: Created [{dockerfile_path}].")
 
 
 def version_callback(value: bool):
