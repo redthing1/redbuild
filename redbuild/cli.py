@@ -103,7 +103,11 @@ def image(
     )
 
     logger.debug(f"Running command: {build_cmd}")
-    build_proc = build_cmd()
+    try:
+        build_proc = build_cmd()
+    except sh.ErrorReturnCode as e:
+        print(f"Build failed with error code {e.exit_code}")
+        raise typer.Exit(1)
 
 
 @app.command(help="Run a build script in the build environment")
@@ -173,13 +177,18 @@ def build(
 
     relative_buildscript = f"./{buildscript}"
     logger.debug(f"Running command: {run_cmd}")
-    run_proc = run_cmd(
-        builder_image_name,
-        "/bin/bash",
-        "-l",
-        "-c",
-        f"cd /prj && {relative_buildscript} {build_args}",
-    )
+
+    try:
+        run_proc = run_cmd(
+            builder_image_name,
+            "/bin/bash",
+            "-l",
+            "-c",
+            f"cd /prj && {relative_buildscript} {build_args}",
+        )
+    except sh.ErrorReturnCode as e:
+        print(f"Build failed with error code {e.exit_code}")
+        raise typer.Exit(1)
 
 
 @app.command(help="Run a shell in the build environment")
@@ -231,13 +240,18 @@ def shell(
     )
 
     logger.debug(f"Running command: {run_cmd}")
-    run_proc = run_cmd(
-        builder_image_name,
-        "/bin/bash",
-        "-l",
-        *parse_secondary_args(shell_args),
-        _fg=True,
-    )
+
+    try:
+        run_proc = run_cmd(
+            builder_image_name,
+            "/bin/bash",
+            "-l",
+            *parse_secondary_args(shell_args),
+            _fg=True,
+        )
+    except sh.ErrorReturnCode as e:
+        print(f"Shell failed with error code {e.exit_code}")
+        raise typer.Exit(1)
 
 
 @app.command(help="Initialize a build environment")
