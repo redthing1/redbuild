@@ -21,7 +21,7 @@ from .engine import (
     get_container_engine_command,
 )
 from .util import get_builder_image_name, parse_secondary_args
-from .res import DEFAULT_BUILDENV_DOCKERFILE
+from .composer import BuildEnv, compose_dockerfile, DEFAULT_BUILDENV
 
 APP_NAME = "redbuild"
 app = typer.Typer(
@@ -280,9 +280,12 @@ def init(
 
     # write out a default Dockerfile
     with open(dockerfile_path, "w") as f:
-        f.write(DEFAULT_BUILDENV_DOCKERFILE)
+        f.write(compose_dockerfile(DEFAULT_BUILDENV))
 
-    print(f"Initialized build environment dockerfile: Created [{dockerfile_path}].")
+    print(f"Initialized build environment dockerfile: Created [{dockerfile_path}]:")
+    with open(dockerfile_path, "r") as f:
+        for line in f:
+            print(f"  {line}", end="")
 
 
 def version_callback(value: bool):
