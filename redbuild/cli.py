@@ -29,8 +29,10 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
-# bind mount volume options
-VOLUME_OPTS = ":z"
+DEFAULT_DOCKERFILE = (
+    "build.docker"  # filename of default dockerfile for build environment
+)
+VOLUME_OPTS = ":z"  # bind mount volume options
 
 
 @app.command()
@@ -61,7 +63,7 @@ def info():
 @app.command()
 def image(
     dockerfile: str = typer.Option(
-        "build.docker",
+        DEFAULT_DOCKERFILE,
         "--dockerfile",
         "-f",
         help="Dockerfile to use for defining the build environment",
@@ -106,7 +108,7 @@ def image(
 @app.command()
 def build(
     dockerfile: str = typer.Option(
-        "build.docker",
+        DEFAULT_DOCKERFILE,
         "--dockerfile",
         "-f",
         help="Dockerfile to use for defining the build environment",
@@ -175,7 +177,7 @@ def build(
 @app.command()
 def shell(
     dockerfile: str = typer.Option(
-        "build.docker",
+        DEFAULT_DOCKERFILE,
         "--dockerfile",
         "-f",
         help="Dockerfile to use for defining the build environment",
