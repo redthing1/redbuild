@@ -18,7 +18,7 @@ from .engine import (
     detect_container_engine,
     get_container_engine_command,
 )
-from .util import get_builder_image_name
+from .util import get_builder_image_name, parse_secondary_args
 
 app = typer.Typer(
     name="redbuild",
@@ -138,7 +138,7 @@ def build(
         # "-it",
         "-v",
         f"{cwd}:/prj{PWD_VOLUME_MOUNT_OPTIONS}",
-        *[arg for arg in crun_args.split(" ") if arg],
+        *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(
         *run_cmd_args,
@@ -201,7 +201,7 @@ def shell(
         "-it",
         "-v",
         f"{cwd}:/prj{PWD_VOLUME_MOUNT_OPTIONS}",
-        *[arg for arg in crun_args.split(" ") if arg],
+        *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(
         *run_cmd_args,
@@ -212,7 +212,7 @@ def shell(
         builder_image_name,
         "/bin/bash",
         "-l",
-        *[arg for arg in shell_args.split(" ") if arg],
+        *parse_secondary_args(shell_args),
         _fg=True,
     )
 

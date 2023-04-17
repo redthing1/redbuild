@@ -23,3 +23,7 @@ def get_builder_image_name(cwd):
     builder_tag = f"redbuild_builder_{cwd_dirname}_{cwd_hash}"
 
     return builder_tag
+
+
+def parse_secondary_args(args):
+    return [arg for arg in args.split(" ") if arg]
