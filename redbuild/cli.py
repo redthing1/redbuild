@@ -12,7 +12,9 @@ import typer
 import multiprocessing
 import psutil
 from loguru import logger
+from typing import List, Optional
 
+from . import __version__
 from .engine import (
     ContainerEngine,
     detect_container_engine,
@@ -20,9 +22,10 @@ from .engine import (
 )
 from .util import get_builder_image_name, parse_secondary_args
 
+APP_NAME = "redbuild"
 app = typer.Typer(
-    name="redbuild",
-    help="redbuild is a tool for easy magic containerized builds",
+    name=APP_NAME,
+    help=f"{APP_NAME}: a tool for easy magic containerized builds",
     no_args_is_help=True,
 )
 
@@ -32,17 +35,26 @@ VOLUME_OPTS = ":z"
 
 @app.command()
 def info():
+    app_info_logo = f"{APP_NAME} v{__version__}"
+    print(app_info_logo)
+    print("- " * (len(app_info_logo) // 2 + 1))
+
+    # show info about host
+    print("Host information:")
     host_os = sys.platform
     host_arch = sys.maxsize > 2**32 and "64bit" or "32bit"
     host_cores = multiprocessing.cpu_count()
     host_memory = int(psutil.virtual_memory().total / 1024**2)
-    print(f"Host OS: {host_os}")
-    print(f"Host architecture: {host_arch}")
-    print(f"Host cores: {host_cores}")
-    print(f"Host memory: {host_memory} MB")
+    print(f"  Host OS: {host_os}")
+    print(f"  Host architecture: {host_arch}")
+    print(f"  Host cores: {host_cores}")
+    print(f"  Host memory: {host_memory} MB")
 
+    # show info about container engine
     container_engine = detect_container_engine()
     print(f"Container engine: {container_engine}")
+    ctr_engine = get_container_engine_command(container_engine)
+    print(f"  Version: {ctr_engine('--version')}", end="")
 
 
 # build the build environment image
@@ -218,9 +230,18 @@ def shell(
     )
 
 
+def version_callback(value: bool):
+    if value:
+        print(__version__)
+        raise typer.Exit()
+
+
 @app.callback()
 def app_callback(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
+    version: Optional[bool] = typer.Option(
+        None, "--version", "-V", callback=version_callback
+    ),
 ):
     # loguru setup
     logger.remove()
