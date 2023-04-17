@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "redbuild"
-version = "2.0.1"
+version = "2.0.2"
 description = "magic containerized builds"
 authors = ["redthing1 <redthing1@alt.icu>"]
 readme = "README.md"
@@ -22,6 +22,5 @@ zstandard = "^0.20.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-
 [tool.poetry.scripts]
-build_native = "script.build_native:main"
+redbuild = "redbuild.cli:main"
