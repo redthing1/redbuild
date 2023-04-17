@@ -26,6 +26,8 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
+PWD_VOLUME_MOUNT_OPTIONS = ":z"
+
 
 @app.command()
 def info():
@@ -135,7 +137,7 @@ def build(
         "--rm",
         # "-it",
         "-v",
-        f"{cwd}:/prj",
+        f"{cwd}:/prj{PWD_VOLUME_MOUNT_OPTIONS}",
         *[arg for arg in crun_args.split(" ") if arg],
     ]
     run_cmd = ctr_engine.bake(
@@ -198,7 +200,7 @@ def shell(
         "--rm",
         "-it",
         "-v",
-        f"{cwd}:/prj",
+        f"{cwd}:/prj{PWD_VOLUME_MOUNT_OPTIONS}",
         *[arg for arg in crun_args.split(" ") if arg],
     ]
     run_cmd = ctr_engine.bake(
