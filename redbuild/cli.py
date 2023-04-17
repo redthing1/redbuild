@@ -83,9 +83,10 @@ def image(
     # 2. build builder image
     # ensure dockerfile exists
     if not os.path.isfile(dockerfile):
-        raise Exception(
+        print(
             f"Dockerfile [{dockerfile}] not found. Create it or pass a specific path with -f."
         )
+        raise typer.Exit(1)
 
     # $CONTAINER_ENGINE build -t $BUILDER_TAG $CBUILD_ARGS -f $DOCKERFILE | sed 's/^/  /'
     print(f"Building builder image [{builder_image_name}] in context [{cwd}]:")
@@ -142,6 +143,13 @@ def build(
     image(dockerfile=dockerfile, cwd=cwd)
 
     # 3. run build
+    buildscript_path = os.path.join(cwd, buildscript)
+    # ensure buildscript exists
+    if not os.path.isfile(buildscript_path):
+        print(
+            f"Build script [{buildscript_path}] not found. Create it or pass a specific path with -s."
+        )
+        raise typer.Exit(1)
     # $CONTAINER_ENGINE run --rm -it -v $(pwd):/prj $CRUN_ARGS $BUILDER_TAG /bin/bash -l -c "cd /prj && $BUILDSCRIPT $ARGS" | sed 's/^/  /'
     print(
         f"Running build in [{builder_image_name}] with buildscript [{buildscript}] in context [{cwd}]:"
