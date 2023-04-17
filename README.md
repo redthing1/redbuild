@@ -9,7 +9,13 @@ redbuild is a super simple drop-in script enabling software to be built in pre-d
 
 `redbuild`: just add water!
 
-## build redbuild2 using redbuild1
+## install stable version from pypi
+
+```sh
+pip install redbuild
+```
+
+## build from source
 
 To build redbuild2, we will use the redbuild1 shell script to bootstrap the build environment and build redbuild2.
     
@@ -40,26 +46,27 @@ redbuild build
 ### creating the build environment and build script
 
 1. create a `build.docker` file in the project root. this file should contain a `FROM` directive for the base image to use for the build environment. the build environment should contain all the tools necessary to build the project.
+it's also very important that the last line of the dockerfile is `CMD ["/bin/bash", "-l"]`. this is necessary for redbuild to work.
 
-    `build.docker`:
+    an example `build.docker`:
 
     ```dockerfile
-    FROM debian:buster-slim
+    FROM debian:bookworm-slim
 
     # install dependencies
     RUN apt-get update && apt-get install -y \
-    bash \
-    curl wget xz-utils \
-    gcc make libc6-dev libcurl4 \
-    git libxml2 \
-    && rm -rf /var/lib/apt/lists/* && apt autoremove -y && apt clean
+        bash \
+        curl wget xz-utils \
+        gcc make libc6-dev libcurl4 \
+        git libxml2 \
+        && rm -rf /var/lib/apt/lists/* && apt autoremove -y && apt clean
 
 
     # install dlang
     RUN curl -fsS https://dlang.org/install.sh | bash -s install ldc-1.30.0 \
-    && echo "source ~/dlang/ldc-1.30.0/activate" >> ~/.bashrc
+        && echo "source ~/dlang/ldc-1.30.0/activate" >> ~/.bashrc
 
-    # set up main to run bash
+    # set up main to run bash (necessary for redbuild)
     CMD ["/bin/bash", "-l"]
     ```
 
