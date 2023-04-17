@@ -174,6 +174,12 @@ def shell(
         "-R",
         help="Additional arguments to pass to container engine",
     ),
+    shell_args=typer.Option(
+        "",
+        "--shell-args",
+        "-A",
+        help="Additional arguments to pass to shell",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -204,6 +210,7 @@ def shell(
         builder_image_name,
         "/bin/bash",
         "-l",
+        *[arg for arg in shell_args.split(" ") if arg],
         _fg=True,
     )
 
