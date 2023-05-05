@@ -9,14 +9,20 @@ class ContainerEngine(Enum):
     def __str__(self):
         return self.value
 
+def is_program_available(program_name: str):
+    try:
+        sh.which(program_name)
+        return True
+    except sh.ErrorReturnCode:
+        return False
 
 def detect_container_engine():
     # get container engine
     # we prefer podman to docker, but we'll use docker if podman is not available
 
-    if sh.which("podman"):
+    if is_program_available("podman"):
         return ContainerEngine.podman
-    elif sh.which("docker"):
+    elif is_program_available("docker"):
         return ContainerEngine.docker
     else:
         raise Exception(
