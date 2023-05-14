@@ -136,6 +136,12 @@ def build(
         "-B",
         help="Additional arguments to pass to build script",
     ),
+    cache_mounts: List[str] = typer.Option(
+        [],
+        "--cache-mounts",
+        "-k",
+        help="Volume mount directories to use for caching",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -158,13 +164,26 @@ def build(
     print(
         f"Running build in [{builder_image_name}] with buildscript [{buildscript}] in context [{cwd}]:"
     )
+
+    cache_volume_mount_args = []
+    for cache_mount in cache_mounts:
+        cache_mount_source, cache_mount_target = cache_mount.split(":")
+        # cache_volume_mount_args.extend(["-v", f"{cache_mount}"])
+        # create source directory if it doesn't exist
+        os.makedirs(cache_mount_source, exist_ok=True)
+        cache_volume_mount_args.extend(
+            ["-v", f"{cache_mount_source}:{cache_mount_target}{VOLUME_OPTS}"]
+        )
+
     run_cmd_args = [
         "run",
         # podman run args
         "--rm",
         # "-it",
+        # mount project directory
         "-v",
         f"{cwd}:/prj{VOLUME_OPTS}",
+        *cache_volume_mount_args,
         *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(
