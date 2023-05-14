@@ -23,11 +23,13 @@ from .engine import (
 from .util import get_builder_image_name, parse_secondary_args
 from .composer import BuildEnv, compose_dockerfile, DEFAULT_BUILDENV
 
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 APP_NAME = "redbuild"
 app = typer.Typer(
     name=APP_NAME,
     help=f"{APP_NAME}: a tool for easy magic containerized builds",
     no_args_is_help=True,
+    context_settings=CONTEXT_SETTINGS,
 )
 
 DEFAULT_DOCKERFILE = (

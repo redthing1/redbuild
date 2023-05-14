@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "redbuild"
-version = "2.1.0"
+version = "2.1.1"
 description = "magic containerized builds"
 authors = ["redthing1 <redthing1@alt.icu>"]
 readme = "README.md"
