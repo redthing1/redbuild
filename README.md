@@ -5,7 +5,7 @@ magic containerized builds
 
 ## overview
 
-redbuild is a super simple drop-in script enabling software to be built in pre-defined containers. with `podman` installed, any supported project can be built with a single command. projects provide a `build.docker` and `build.sh` for defining the build environment and build steps.
+redbuild enables software to be built in pre-defined environments using the power of containerization. with `podman` installed, any supported project can be built with a single command. projects provide a `build.docker` and `build.sh` for defining the build environment and build steps.
 
 `redbuild`: just add water!
 
