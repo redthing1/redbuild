@@ -196,17 +196,20 @@ def build(
         _err=lambda line: print(f"  {line}", end=""),
     )
 
-    relative_buildscript = f"./{buildscript}"
-    logger.debug(f"Running command: {run_cmd}")
+    relative_buildscript = os.path.join(".", buildscript)
+    # logger.debug(f"Running command: {run_cmd}")
 
+    bash_command = f"cd /prj && {relative_buildscript} {build_args}"
     try:
-        run_proc = run_cmd(
+        run_cmd = run_cmd.bake(
             builder_image_name,
             "/bin/bash",
             "-l",
             "-c",
-            f"cd /prj && {relative_buildscript} {build_args}",
+            bash_command,
         )
+        logger.debug(f"Running command: {run_cmd}")
+        run_proc = run_cmd()
     except sh.ErrorReturnCode as e:
         print(f"Build failed with error code {e.exit_code}")
         raise typer.Exit(1)
@@ -247,6 +250,7 @@ def shell(
 
     # 3. run an interactive shell with the build environment
     print(f"Running interactive shell in [{builder_image_name}] in context [{cwd}]:")
+    # cwd_absolute = os.path.abspath(cwd)
     run_cmd_args = [
         "run",
         # podman run args

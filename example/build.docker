@@ -13,5 +13,6 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsS https://dlang.org/install.sh | bash -s install ldc-1.30.0 \
   && echo "source ~/dlang/ldc-1.30.0/activate" >> ~/.bashrc
 
-# set up main to run bash
+# redbuild setup
+WORKDIR /prj
 CMD ["/bin/bash", "-l"]

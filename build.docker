@@ -14,5 +14,6 @@ RUN apt update && apt install -y \
 RUN curl -sSL https://install.python-poetry.org | python3 - \
   && echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
 
-# set up main to run bash
+# redbuild setup
+WORKDIR /prj
 CMD ["/bin/bash", "-l"]
