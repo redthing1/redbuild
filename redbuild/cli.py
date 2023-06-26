@@ -35,8 +35,22 @@ app = typer.Typer(
 DEFAULT_DOCKERFILE = (
     "build.docker"  # filename of default dockerfile for build environment
 )
-VOLUME_OPTS = ":z"  # bind mount volume options
 
+# VOLUME_OPTS = ":z"  # bind mount volume options
+# detect volume options based on OS
+if sys.platform == "linux":
+    # selinux may be present
+    VOLUME_OPTS = ":z"
+elif sys.platform == "darwin":
+    # macos
+    VOLUME_OPTS = ""
+elif sys.platform == "win32":
+    # windows
+    VOLUME_OPTS = ""
+else:
+    # unknown
+    logger.warning(f"Unknown platform [{sys.platform}], assuming no volume options")
+    VOLUME_OPTS = ""
 
 @app.command()
 def info():
