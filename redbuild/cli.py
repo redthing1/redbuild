@@ -166,6 +166,7 @@ def build(
     print(
         f"Running build in [{builder_image_name}] with buildscript [{buildscript}] in context [{cwd}]:"
     )
+    cwd_absolute = os.path.abspath(cwd)
 
     cache_volume_mount_args = []
     for cache_mount in cache_mounts:
@@ -184,7 +185,7 @@ def build(
         # "-it",
         # mount project directory
         "-v",
-        f"{cwd}:/prj{VOLUME_OPTS}",
+        f"{cwd_absolute}:/prj{VOLUME_OPTS}",
         *cache_volume_mount_args,
         *parse_secondary_args(crun_args),
     ]
@@ -250,30 +251,32 @@ def shell(
 
     # 3. run an interactive shell with the build environment
     print(f"Running interactive shell in [{builder_image_name}] in context [{cwd}]:")
-    # cwd_absolute = os.path.abspath(cwd)
+    cwd_absolute = os.path.abspath(cwd)
     run_cmd_args = [
         "run",
         # podman run args
         "--rm",
         "-it",
         "-v",
-        f"{cwd}:/prj{VOLUME_OPTS}",
+        f"{cwd_absolute}:/prj{VOLUME_OPTS}",
         *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(
         *run_cmd_args,
     )
 
-    logger.debug(f"Running command: {run_cmd}")
+    # logger.debug(f"Running command: {run_cmd}")
 
     try:
-        run_proc = run_cmd(
+        run_cmd = run_cmd.bake(
             builder_image_name,
             "/bin/bash",
             "-l",
             *parse_secondary_args(shell_args),
             _fg=True,
         )
+        logger.debug(f"Running command: {run_cmd}")
+        run_proc = run_cmd()
     except sh.ErrorReturnCode as e:
         print(f"Shell failed with error code {e.exit_code}")
         raise typer.Exit(1)
