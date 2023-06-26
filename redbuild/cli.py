@@ -247,6 +247,12 @@ def shell(
         "-R",
         help="Additional arguments to pass to container engine",
     ),
+    login_shell: str = typer.Option(
+        "/bin/bash",
+        "--login-shell",
+        "-s",
+        help="Login shell to use in the container",
+    ),
     shell_args=typer.Option(
         "",
         "--shell-args",
@@ -284,7 +290,7 @@ def shell(
     try:
         run_cmd = run_cmd.bake(
             builder_image_name,
-            "/bin/bash",
+            login_shell,
             "-l",
             *parse_secondary_args(shell_args),
             _fg=True,
