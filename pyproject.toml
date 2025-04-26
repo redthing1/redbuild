@@ -1,20 +1,21 @@
 [tool.poetry]
 name = "redbuild"
-version = "2.2.0"
+version = "2.3.0"
 description = "magic containerized builds"
 authors = ["redthing1 <redthing1@alt.icu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
-typer = {extras = ["rich"], version = "^0.7.0"}
-sh = "^2.0.3"
+typer = "^0.15.2"
+sh = "^2.2.2"
 toml = "^0.10.2"
 ordered-set = "^4.1.0"
 loguru = "^0.7.0"
 psutil = "^5.9.4"
 single-source = "^0.3.0"
 rich = "^13.3.4"
+minlog = "^0.6.0"
 
 [tool.poetry.group.dev.dependencies]
 nuitka = "^1.5.5"
