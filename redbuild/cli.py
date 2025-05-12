@@ -158,6 +158,12 @@ def build(
         "-k",
         help="Volume mount directories to use for caching",
     ),
+    mounts: List[str] = typer.Option(
+        [],
+        "--mount",
+        "-m",
+        help="Additional volume mounts in source:target[:options] format",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -182,15 +188,41 @@ def build(
     )
     cwd_absolute = os.path.abspath(cwd)
 
-    cache_volume_mount_args = []
+    # prepare volume mount arguments
+    volume_mount_args = []
+
+    # add cache mounts
     for cache_mount in cache_mounts:
         cache_mount_source, cache_mount_target = cache_mount.split(":")
-        # cache_volume_mount_args.extend(["-v", f"{cache_mount}"])
         # create source directory if it doesn't exist
         os.makedirs(cache_mount_source, exist_ok=True)
-        cache_volume_mount_args.extend(
+        volume_mount_args.extend(
             ["-v", f"{cache_mount_source}:{cache_mount_target}{VOLUME_OPTS}"]
         )
+
+    # add additional mounts
+    for mount in mounts:
+        # parse mount specification
+        mount_parts = mount.split(":")
+
+        if len(mount_parts) >= 2:
+            # ensure source directory exists and is absolute
+            source = os.path.abspath(mount_parts[0])
+            target = mount_parts[1]
+
+            # check if custom options are provided
+            if len(mount_parts) == 3:
+                mount_opts = f":{mount_parts[2]}"
+            else:
+                mount_opts = VOLUME_OPTS
+
+            # create source directory if it doesn't exist
+            os.makedirs(source, exist_ok=True)
+
+            # add to volume arguments
+            volume_mount_args.extend(["-v", f"{source}:{target}{mount_opts}"])
+        else:
+            logger.warning(f"Invalid mount specification: {mount}, skipping")
 
     run_cmd_args = [
         "run",
@@ -200,7 +232,7 @@ def build(
         # mount project directory
         "-v",
         f"{cwd_absolute}:/prj{VOLUME_OPTS}",
-        *cache_volume_mount_args,
+        *volume_mount_args,
         *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(
@@ -259,6 +291,18 @@ def shell(
         "-A",
         help="Additional arguments to pass to shell",
     ),
+    cache_mounts: List[str] = typer.Option(
+        [],
+        "--cache-mounts",
+        "-k",
+        help="Volume mount directories to use for caching",
+    ),
+    mounts: List[str] = typer.Option(
+        [],
+        "--mount",
+        "-m",
+        help="Additional volume mounts in source:target[:options] format",
+    ),
 ):
     # 0. get container engine
     ctr_engine = get_container_engine_command(detect_container_engine())
@@ -272,6 +316,43 @@ def shell(
     # 3. run an interactive shell with the build environment
     print(f"Running interactive shell in [{builder_image_name}] in context [{cwd}]:")
     cwd_absolute = os.path.abspath(cwd)
+
+    # prepare volume mount arguments
+    volume_mount_args = []
+
+    # add cache mounts
+    for cache_mount in cache_mounts:
+        cache_mount_source, cache_mount_target = cache_mount.split(":")
+        # create source directory if it doesn't exist
+        os.makedirs(cache_mount_source, exist_ok=True)
+        volume_mount_args.extend(
+            ["-v", f"{cache_mount_source}:{cache_mount_target}{VOLUME_OPTS}"]
+        )
+
+    # add additional mounts
+    for mount in mounts:
+        # parse mount specification
+        mount_parts = mount.split(":")
+
+        if len(mount_parts) >= 2:
+            # ensure source directory exists and is absolute
+            source = os.path.abspath(mount_parts[0])
+            target = mount_parts[1]
+
+            # check if custom options are provided
+            if len(mount_parts) == 3:
+                mount_opts = f":{mount_parts[2]}"
+            else:
+                mount_opts = VOLUME_OPTS
+
+            # create source directory if it doesn't exist
+            os.makedirs(source, exist_ok=True)
+
+            # add to volume arguments
+            volume_mount_args.extend(["-v", f"{source}:{target}{mount_opts}"])
+        else:
+            logger.warning(f"Invalid mount specification: {mount}, skipping")
+
     run_cmd_args = [
         "run",
         # podman run args
@@ -279,6 +360,7 @@ def shell(
         "-it",
         "-v",
         f"{cwd_absolute}:/prj{VOLUME_OPTS}",
+        *volume_mount_args,
         *parse_secondary_args(crun_args),
     ]
     run_cmd = ctr_engine.bake(

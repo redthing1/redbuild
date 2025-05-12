@@ -50,10 +50,12 @@ redbuild init --wizard  # interactive configuration
 redbuild image
 
 # run the build script in the container
-redbuild build 
+redbuild build
+redbuild build --mount /host/path:/container/path  # with additional volume mount
 
 # open a shell in the build environment
 redbuild shell
+redbuild shell --mount /host/path:/container/path  # with additional volume mount
 
 # get help with any command
 redbuild --help
